@@ -227,9 +227,12 @@ int load_primitives(struct sock *sk, const struct rate_sample *rs) {
 void tcp_ccp_cong_control(struct sock *sk, const struct rate_sample *rs) {
     // aggregate measurement
     // state = fold(state, rs)
+    printk(KERN_INFO "got to tcp_ccp_cong_control");
     int ok;
     struct ccp *ca = inet_csk_ca(sk);
     struct ccp_connection *dp = ca->dp;
+	// test running bpf program on demand
+	tcp_call_bpf(sk, BPF_SOCK_OPS_TCP_CONNECT_CB);
 
     if (ipc == IPC_CHARDEV) {
         ccpkp_try_read();
