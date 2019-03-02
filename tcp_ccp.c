@@ -249,6 +249,7 @@ void tcp_ccp_cong_control(struct sock *sk, const struct rate_sample *rs) {
     int ok;
     struct ccp *ca = inet_csk_ca(sk);
     struct ccp_connection *dp = ca->dp;
+	u32 bpf_data[4];
 
 #if __IPC__ == IPC_CHARDEV
         ccpkp_try_read();
@@ -260,6 +261,14 @@ void tcp_ccp_cong_control(struct sock *sk, const struct rate_sample *rs) {
         if (ok < 0) {
             return;
         }
+		
+		bpf_data[0] = rs->delivered;
+		bpf_data[1] = (s32) rs->rtt_us;
+		bpf_data[2] = rs->losses;
+		bpf_data[3] = rs->acked_sacked;
+
+		tcp_call_bpf(sk, BPF_SOCK_OPS_TCP_CONNECT_CB, 4, bpf_data);
+		printk("delivered %d\n", rs->delivered);
 
         ccp_invoke(dp);
         ca->dp->prims.was_timeout = false;
