@@ -28,9 +28,6 @@ ccp-objs := libccp/serialize.o libccp/ccp_priv.o libccp/machine.o libccp/ccp.o c
 obj-m := $(TARGET).o
 
 all:
-ifneq ($(KERNEL_VERSION_MAJOR),4)
-	$(error "Only kernel version 4 is supported: $(KERNEL_VERSION_MAJOR) $(KERNEL_VERSION_MINOR)")
-endif 
 	$(MAKE) -C /lib/modules/$(shell uname -r)/build M=$(CURDIR) modules
 
 clean:

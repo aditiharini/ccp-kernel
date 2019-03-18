@@ -1,17 +1,27 @@
-COMMONOBJS = bpf.o bpf_load.o nlattr.o
-
-CCPPROG = bpf_data_user
+COMMONOBJS = bpf.o str_error.o nlattr.o btf.o bpf_load.o trace_helpers.o libbpf.o
 LOADPROG = load_sock_ops
-CCPOBJ = $(CCPPROG).o
+TRACEPROG = trace_output_user
+CCPPROG = bpf_perf_user
+
 LOADOBJ = $(LOADPROG).o
-PROGS= $(CCPPROG) $(LOADPROG)
-OBJS= $(COMMONOBJS) $(CCPOBJ) $(LOADOBJ)
+TRACEOBJ = $(TRACEPROG).o
+CCPOBJ = $(CCPPROG).o
+
+PROGS= $(LOADPROG) $(TRACEPROG) $(CCPPROG)
+OBJS= $(COMMONOBJS) $(LOADOBJ) $(TRACEOBJ) $(CCPOBJ)
+
 
 linuxhdrs ?= /usr/src/linux-headers-4.19.0-041900
 
-LINUXINCLUDE =  -I$(linuxhdrs)/arch/x86/include/uapi \
-                -I$(linuxhdrs)/include/uapi \
-                -I$(linuxhdrs)/include \
+LINUXINCLUDE =  -I ../../linux-fork/tools/lib \
+				-I ../../linux-fork/tools/testing/selftests/bpf \
+				-I ../../linux-fork/tools/perf \
+				-I ../../linux-fork/tools/lib/bpf \
+				-I ../../linux-fork/tools/include \
+				-I ../../linux-fork/arch/x86/include \
+				-I ../../linux-fork/arch/x86/include/generated \
+				-I ../../linux-fork/usr/include \
+
 
 prefix ?= /usr/local
 
@@ -20,9 +30,9 @@ INSTALLPATH = $(prefix)/bin
 install_PROGRAM = install
 install_DIR = install -d
 
-LDLIBS = -lelf
+LDLIBS = -lelf -lrt
 
-all: $(CCPPROG) $(LOADPROG)
+all: $(LOADPROG) $(TRACEPROG) $(CCPPROG)
 
 .PHONY: clean
 
