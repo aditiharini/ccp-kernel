@@ -1,6 +1,5 @@
 #include <linux/ptrace.h>
 #include <linux/bpf.h>
-#include <linux/version.h>
 
 #include "bpf_helpers.h"
 
@@ -29,4 +28,3 @@ int send_ccp_data(struct bpf_sock_ops * skops) {
 }
 
 char _license[] SEC("license") = "GPL";
-__u32 _version SEC("version") = 1;

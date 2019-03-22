@@ -37,7 +37,6 @@ static int print_output(void * data, int size) {
 }
 
 static void init(void) {
-	printf("got to init\n");
 	struct perf_event_attr attr = {
 		.sample_type = PERF_SAMPLE_RAW,
 		.type = PERF_TYPE_SOFTWARE,

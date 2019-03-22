@@ -1,5 +1,4 @@
 #include <linux/ptrace.h>
-#include <linux/version.h>
 #include <linux/bpf.h>
 #include "bpf_helpers.h"
 
@@ -26,5 +25,3 @@ int bpf_prog1(struct pt_regs *ctx)
 	return 0;
 }
 
-char _license[] SEC("license") = "GPL";
-__u32 _version SEC("version") = LINUX_VERSION_CODE;

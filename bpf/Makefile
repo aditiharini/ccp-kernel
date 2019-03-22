@@ -8,13 +8,11 @@ EXTRA_CFLAGS ?= -O2 -emit-llvm
 # In case up-to-date headers are not installed locally in /usr/include,
 # use source build.
 
-linuxhdrs ?= /usr/src/kernels/`uname -r`
+linuxhdrs ?= /usr/src/linux-headers-5.0.0-050000
 
-LINUXINCLUDE =  -I ../../linux-fork/usr/include \
-				-I ../../linux-fork/tools/lib \
-				-I ../../linux-fork/tools/testing/selftests/bpf \
-				-I ../../linux-fork/tools/perf \
-				-I ../../linux-fork/tools/lib/bpf \
+LINUXINCLUDE =  -I $(linuxhdrs)/arch/x86/include/uapi \
+				-I $(linuxhdrs)/include/uapi \
+				-I $(linuxhdrs)/include \
 
 prefix ?= /usr/local
 

@@ -11,16 +11,12 @@ PROGS= $(LOADPROG) $(TRACEPROG) $(CCPPROG)
 OBJS= $(COMMONOBJS) $(LOADOBJ) $(TRACEOBJ) $(CCPOBJ)
 
 
-linuxhdrs ?= /usr/src/linux-headers-4.19.0-041900
+linuxhdrs ?= /usr/src/linux-headers-5.0.0-050000
 
-LINUXINCLUDE =  -I ../../linux-fork/tools/lib \
-				-I ../../linux-fork/tools/testing/selftests/bpf \
-				-I ../../linux-fork/tools/perf \
-				-I ../../linux-fork/tools/lib/bpf \
-				-I ../../linux-fork/tools/include \
-				-I ../../linux-fork/arch/x86/include \
-				-I ../../linux-fork/arch/x86/include/generated \
-				-I ../../linux-fork/usr/include \
+LINUXINCLUDE =  -I $(linuxhdrs)/arch/x86/include/uapi\
+				-I $(linuxhdrs)/arch/x86/include\
+				-I $(linuxhdrs)/include/uapi\
+				-I $(linuxhdrs)/include\
 
 
 prefix ?= /usr/local
@@ -40,7 +36,7 @@ clean:
 	rm -f $(OBJS) $(PROGS)
 
 %.o: %.c
-	$(CC) -g -Wno-unused-variable $(LINUXINCLUDE) -c -o $@ $< $(CFLAGS)
+	$(CC) -g -Wno-unused-variable -I ../include $(LINUXINCLUDE) -c -o $@ $< $(CFLAGS)
 
 $(PROGS): $(OBJS)
 	$(CC) -g -o $@ $(@).o $(COMMONOBJS) $(CFLAGS) $(LDLIBS)
