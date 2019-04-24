@@ -2,6 +2,7 @@ COMMONOBJS = bpf.o str_error.o nlattr.o btf.o bpf_load.o trace_helpers.o libbpf.
 LOADPROG = load_sock_ops
 TRACEPROG = trace_output_user
 CCPPROG = bpf_perf_user
+LIB = libbpfuser.a
 
 LOADOBJ = $(LOADPROG).o
 TRACEOBJ = $(TRACEPROG).o
@@ -28,12 +29,15 @@ install_DIR = install -d
 
 LDLIBS = -lelf -lrt
 
-all: $(LOADPROG) $(TRACEPROG) $(CCPPROG)
+all: $(LOADPROG) $(TRACEPROG) $(CCPPROG) $(LIB)
 
 .PHONY: clean
 
 clean:
-	rm -f $(OBJS) $(PROGS)
+	rm -f $(OBJS) $(PROGS) $(LIB)
+
+$(LIB) : $(COMMONOBJS)
+	ar -r -o $@ $^
 
 %.o: %.c
 	$(CC) -g -Wno-unused-variable -I ../include $(LINUXINCLUDE) -c -o $@ $< $(CFLAGS)
@@ -45,5 +49,5 @@ install: $(PROGS)
 	$(install_DIR) -d $(INSTALLPATH) ; \
     $(install_PROGRAM) $^ -t $(INSTALLPATH)
 
-uninstall: $(PROGS)
+uninstall: $(PROGS) $(LIB)
 	cd $(INSTALLPATH); rm -f $^

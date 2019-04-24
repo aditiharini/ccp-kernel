@@ -1,0 +1,12 @@
+[package]
+name = "bpfuser"
+version = "0.1.0"
+build = "build.rs"
+
+[build-dependencies]
+bindgen = "*"
+
+[dependencies]
+libc = "0.2"
+perf = "0.0.1"
+

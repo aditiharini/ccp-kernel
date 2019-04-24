@@ -19,7 +19,11 @@
 #include "perf-sys.h"
 #include "trace_helpers.h"
 
-static int perf_fd;
+#define NCPU 4
+
+static int count;
+static int perf_fds[NCPU];
+static struct perf_event_mmap_page *headers[NCPU];
 
 static int print_output(void * data, int size) {
 	struct {
@@ -28,11 +32,12 @@ static int print_output(void * data, int size) {
 		__s32 losses;
 		__u32 acked_sacked;	
 	} *e = data;
-	printf("EVENT\n");
-	printf("delivered: %d\n", e->delivered);
-	printf("rtt_us: %d\n", e->rtt_us);
-	printf("losses: %d\n", e->losses);
-	printf("acked_sacked: %d\n", e->acked_sacked);
+	count++;
+	if (count % 10000 == 0) {
+		printf("count: %d\n", count);
+		printf("real count: %d\n", e->losses);
+		fflush(stdout);
+	}
 	return LIBBPF_PERF_EVENT_CONT;
 }
 
@@ -41,14 +46,15 @@ static void init(void) {
 		.sample_type = PERF_SAMPLE_RAW,
 		.type = PERF_TYPE_SOFTWARE,
 		.config = PERF_COUNT_SW_BPF_OUTPUT,	
+		.wakeup_events = 1,
 	};
-
-	perf_fd = sys_perf_event_open(&attr, -1, 0, -1, 0);
-	int key = 0;
-
-	assert(perf_fd >= 0);
-	assert(bpf_map_update_elem(map_fd[0], &key, &perf_fd, BPF_ANY) == 0);
-	ioctl(perf_fd, PERF_EVENT_IOC_ENABLE, 0);
+	for (int i = 0; i < NCPU; i++){
+		int key = i;
+		perf_fds[i] = sys_perf_event_open(&attr, -1/*pid*/, i/*cpu*/, -1/*group fd*/, 0);
+		assert(perf_fds[i] >= 0);
+		assert(bpf_map_update_elem(map_fd[0], &key, &perf_fds[i], BPF_ANY) == 0);
+		ioctl(perf_fds[i], PERF_EVENT_IOC_ENABLE, 0);
+	}
 }
 
 int main(int argc, char **argv) {
@@ -68,14 +74,14 @@ int main(int argc, char **argv) {
 
 	init();
 
-	if (perf_event_mmap(perf_fd) < 0) {
-		printf("error with mmap\n");
+	for (int i = 0; i < NCPU; i++) {
+		if (perf_event_mmap_header(perf_fds[i], &headers[i]) < 0){
+			printf("error with mmap\n");
+			return 1;	
+		}
 	}
 
-	f = popen("taskset 1 dd if=/dev/zero of=/dev/null", "r");
-	(void) f;
-
-	ret = perf_event_poller(perf_fd, print_output);
+	ret = perf_event_poller_multi(perf_fds, headers, NCPU, print_output);
 	kill(0, SIGINT);
 	return ret;
 
