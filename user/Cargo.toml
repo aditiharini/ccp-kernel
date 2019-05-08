@@ -8,5 +8,5 @@ bindgen = "*"
 
 [dependencies]
 libc = "0.2"
-perf = "0.0.1"
+ioctls = "*"
 
