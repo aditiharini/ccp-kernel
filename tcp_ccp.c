@@ -24,7 +24,6 @@
 #define CCP_FRAC_DENOM 10
 #define CCP_EWMA_RECENCY 6
 
-static int count;
 
 void ccp_set_pacing_rate(struct sock *sk, uint32_t rate) {
     sk->sk_pacing_rate = rate;
@@ -265,11 +264,9 @@ void tcp_ccp_cong_control(struct sock *sk, const struct rate_sample *rs) {
             return;
         }
 		
-		count++;	
 		bpf_data[0] = rs->delivered;
 		bpf_data[1] = (s32) rs->rtt_us;
-		//bpf_data[2] = rs->losses;
-		bpf_data[2] = count;
+		bpf_data[2] = rs->losses;
 		bpf_data[3] = rs->acked_sacked;
 
 		int ret = tcp_call_bpf(sk, BPF_SOCK_OPS_TCP_CONNECT_CB, 4, bpf_data);
