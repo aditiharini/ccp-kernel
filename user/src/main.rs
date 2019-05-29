@@ -14,19 +14,30 @@ use std::mem;
 static mut perf_fds: [libc::c_int; 4] = [0; 4];
 
 unsafe extern "C" fn print_output(data: *mut libc::c_void, size: libc::c_int) -> bpf_perf_event_ret {
+    struct Connection {
+        local_port: u32, 
+        remote_port: u32, 
+        local_ip4: u32,
+        remote_ip4: u32,
+        sock_id: u32,
+    };
     struct Data {
-        delivered: i32,
-        rtt_us: i32,
-        losses: i32,
-        acked_sacked: u32,
+        lost_pkts_sample: i32,
+        rtt_sample_us: i32,
+        was_timeout: u32,
+        packets_misordered: u32,
+        bytes_acked: u32,
+        packets_in_flight: u32,
+        conn_info: Connection,
     };
     let data_s = data as *mut Data;
-    println!("delivered: {}", (*data_s).delivered);
-    println!("rtt_us: {}", (*data_s).rtt_us);
-    println!("losses: {}", (*data_s).losses);
-    println!("acked_sacked: {}", (*data_s).acked_sacked);
+    println!("lost_pkts_sample: {}", (*data_s).lost_pkts_sample);
+    println!("rtt_sample_us: {}", (*data_s).rtt_sample_us);
+    println!("was_timeout: {}", (*data_s).was_timeout);
+    println!("packets_misordered: {}", (*data_s).packets_misordered);
+    println!("bytes_acked: {}", (*data_s).bytes_acked);
+    println!("packets_in_flight: {}", (*data_s).packets_in_flight);
     return bpf_perf_event_ret_LIBBPF_PERF_EVENT_CONT;
-   
 }
 
 fn init() {

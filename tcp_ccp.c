@@ -264,10 +264,10 @@ void tcp_ccp_cong_control(struct sock *sk, const struct rate_sample *rs) {
             return;
         }
 		
-		bpf_data[0] = rs->delivered;
-		bpf_data[1] = (s32) rs->rtt_us;
-		bpf_data[2] = rs->losses;
-		bpf_data[3] = rs->acked_sacked;
+		bpf_data[0] = dp->prims.lost_pkts_sample;
+		bpf_data[1] = (u32) dp->prims.rtt_sample_us;
+		bpf_data[2] = dp->prims.was_timeout;
+		bpf_data[3] = dp->index;
 
 		int ret = tcp_call_bpf(sk, BPF_SOCK_OPS_TCP_CONNECT_CB, 4, bpf_data);
 		if (ret) {
